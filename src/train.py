@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import category_encoders as ce
+import joblib
 import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
@@ -18,6 +19,9 @@ from src.preprocess import load_and_clean_data
 
 TARGET = "amount(in rupees)"
 DATA_PATH = Path("data/house_prices.csv")
+MODEL_DIR = Path("model")
+MODEL_PATH = MODEL_DIR / "model.pkl"
+TARGET_ENCODER_PATH = MODEL_DIR / "target_encoding.pkl"
 
 RF_PARAMS = {
     "n_estimators": 180,
@@ -100,8 +104,18 @@ def train(data_path: Path = DATA_PATH) -> tuple[object, Pipeline, dict[str, floa
     return encoder, pipeline, metrics
 
 
+def save_artifacts(encoder, pipeline, model_dir: Path = MODEL_DIR) -> tuple[Path, Path]:
+    model_dir.mkdir(parents=True, exist_ok=True)
+    model_path = model_dir / MODEL_PATH.name
+    encoder_path = model_dir / TARGET_ENCODER_PATH.name
+    joblib.dump(pipeline, model_path)
+    joblib.dump(encoder, encoder_path)
+    return model_path, encoder_path
+
+
 def main() -> None:
-    _, _, metrics = train()
+    encoder, pipeline, metrics = train()
+    model_path, encoder_path = save_artifacts(encoder, pipeline)
     print("=" * 60)
     print("Random Forest Regressor")
     print("=" * 60)
@@ -110,6 +124,8 @@ def main() -> None:
     print(f"R²:   {metrics['r2']:.4f}")
     print(f"MAPE: {metrics['mape'] * 100:.2f}%")
     print()
+    print(f"Saved model:           {model_path}")
+    print(f"Saved target encoding: {encoder_path}")
     print("Report reference: MAE 799,909 | R² 0.9414 | MAPE 8.93%")
 
 
