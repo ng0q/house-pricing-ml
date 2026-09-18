@@ -83,10 +83,16 @@ def parse_floor_total(x):
     return np.nan
 
 
+def to_snake_case(name: str) -> str:
+    """Turn 'parking count' / 'amount(in rupees)' into snake_case."""
+    return re.sub(r"[^a-z0-9]+", "_", name.strip().lower()).strip("_")
+
+
 def load_and_clean_data(path: str, target: str = "amount(in rupees)") -> pd.DataFrame:
     """Load the raw CSV and apply the notebook cleaning steps."""
     df = pd.read_csv(path)
-    df.columns = df.columns.str.lower()
+    df.columns = [to_snake_case(col) for col in df.columns]
+    target = to_snake_case(target)
 
     df[target] = df[target].str.lower().apply(parse_amount)
 
@@ -101,11 +107,11 @@ def load_and_clean_data(path: str, target: str = "amount(in rupees)") -> pd.Data
             "status",
             "index",
             "title",
-            "price (in rupees)",
+            "price_in_rupees",
             "description",
             "overlooking",
             "society",
-            "plot area",
+            "plot_area",
             "dimensions",
             "ownership",
         ],
@@ -115,10 +121,10 @@ def load_and_clean_data(path: str, target: str = "amount(in rupees)") -> pd.Data
     df["balcony"] = df["balcony"].replace("> 10", 11)
     df["balcony"] = pd.to_numeric(df["balcony"], errors="coerce")
 
-    df["car parking"] = df["car parking"].str.lower().str.strip()
-    df["car covered"] = df["car parking"].str.contains("covered", na=False).astype(int)
-    df["parking count"] = df["car parking"].str.count(",") + 1
-    df["parking count"] = df["parking count"].fillna(0)
+    df["car_parking"] = df["car_parking"].str.lower().str.strip()
+    df["car_covered"] = df["car_parking"].str.contains("covered", na=False).astype(int)
+    df["parking_count"] = df["car_parking"].str.count(",") + 1
+    df["parking_count"] = df["parking_count"].fillna(0)
 
     furnishing_map = {
         "Unfurnished": 0,
@@ -130,8 +136,8 @@ def load_and_clean_data(path: str, target: str = "amount(in rupees)") -> pd.Data
     df = df[df["transaction"].isin(["New Property", "Resale"])]
     df["transaction"] = np.where(df["transaction"] == "New Property", 1, 0)
 
-    df["super_area_sqft"] = df["super area"].apply(parse_area)
-    df["carpet_area_sqft"] = df["carpet area"].apply(parse_area)
+    df["super_area_sqft"] = df["super_area"].apply(parse_area)
+    df["carpet_area_sqft"] = df["carpet_area"].apply(parse_area)
 
     df = df[
         (df["carpet_area_sqft"].between(100, 20000)) | (df["carpet_area_sqft"].isna())
@@ -141,10 +147,10 @@ def load_and_clean_data(path: str, target: str = "amount(in rupees)") -> pd.Data
     ]
 
     df = df.drop(
-        ["super area", "carpet area"],
+        ["super_area", "carpet_area"],
         axis=1,
     )
-    df = df.drop("car parking", axis=1)
+    df = df.drop("car_parking", axis=1)
 
     df["facing"] = df["facing"].fillna("missing")
     df["facing"] = df["facing"].str.lower()
