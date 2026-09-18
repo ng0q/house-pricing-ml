@@ -1,5 +1,10 @@
 # House Price Prediction
 
+![Python](https://img.shields.io/badge/Python-3.14-blue)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-green)
+![Docker](https://img.shields.io/badge/Docker-container-blue)
+
 Регрессия стоимости жилья по объявлениям из Индии: от EDA и предобработки до обученной модели и HTTP API.
 
 ## О проекте
@@ -181,3 +186,10 @@ curl -X POST http://127.0.0.1:8000/predict \
 - Признаки из текста объявления и более сильный энкодинг локаций
 - Больше тестов: препроцессинг, контракт Docker-образа
 - Версионирование артефактов модели и простой мониторинг качества на новых данных
+
+## Автор
+
+**Илья Рябец** — [GitHub](https://github.com/ng0q) · [Email](mailto:ilyaryabes71@gmail.com)
+
+Студент СибГУТИ, специальность «Разработка ПО для автоматизированных систем».
+
