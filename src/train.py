@@ -17,7 +17,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.preprocess import load_and_clean_data
 
-TARGET = "amount(in rupees)"
+TARGET = "amount_in_rupees"
 DATA_PATH = Path("data/house_prices.csv")
 MODEL_DIR = Path("model")
 MODEL_PATH = MODEL_DIR / "model.pkl"
