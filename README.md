@@ -52,7 +52,7 @@ flowchart LR
 - **LightGBM / CatBoost** — сравнение, в прод не входят
 - **FastAPI + uvicorn + pydantic** — HTTP API
 - **joblib** — сериализация артефактов
-- **Docker** — в плане, в репозитории пока нет
+- **Docker** — `python:3.14-slim`, при сборке качает датасет, обучает RF и поднимает API
 
 ## Структура проекта
 
@@ -71,11 +71,13 @@ house_pricing_ml/
 ├── notebooks/            исходные эксперименты
 ├── report/               отчёт по лабораторной
 ├── docs/                 скриншоты для README
+├── Dockerfile
+├── .dockerignore
 ├── requirements.txt
 └── README.md
 ```
 
-CSV и `.pkl` в git не коммитятся: датасет качается с Kaggle, модель собирается локально через `python -m src.train`.
+CSV и `.pkl` в git не коммитятся: датасет качается с Kaggle, модель собирается через `python -m src.train` или при `docker build`.
 
 ## Как запустить
 
@@ -103,14 +105,16 @@ Swagger UI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ### Через Docker
 
-Dockerfile в репозитории ещё нет. Когда появится, ожидаемый запуск:
+Сборка качает датасет с Kaggle, обучает Random Forest внутри образа и кладёт `model/*.pkl` туда же. Первый `docker build` занимает несколько минут.
 
 ```bash
 docker build -t house-pricing-ml .
 docker run --rm -p 8000:8000 house-pricing-ml
 ```
 
-Образ должен содержать обученные `model/*.pkl` или собирать их на старте.
+API: [http://127.0.0.1:8000](http://127.0.0.1:8000), Swagger: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+Проверка: `GET /health` → `{"status":"healthy"}`. В собранном образе RF даёт MAPE 8.92%, как локальный прогон.
 
 ## API
 
@@ -157,7 +161,7 @@ curl -X POST http://127.0.0.1:8000/predict \
 
 ## Что можно улучшить
 
-- Добавить Dockerfile и compose, чтобы API поднимался одной командой
+- docker-compose, чтобы не помнить флаги `docker run`
 - Убрать подбор гиперпараметров по тестовой выборке (Optuna в лабораторной смотрел на test)
 - Честный CV / отдельный validation split перед финальным тестом
 - Более аккуратная обработка пропусков площади (сейчас часть строк с NaN площади остаётся)
