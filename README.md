@@ -53,6 +53,7 @@ flowchart LR
 - **FastAPI + uvicorn + pydantic** — HTTP API
 - **joblib** — сериализация артефактов
 - **Docker** — `python:3.14-slim`, при сборке качает датасет, обучает RF и поднимает API
+- **pytest** — проверка `/health`, структуры `/predict` и валидации `transaction`
 
 ## Структура проекта
 
@@ -65,6 +66,8 @@ house_pricing_ml/
 ├── src/
 │   ├── preprocess.py     загрузка CSV и очистка
 │   └── train.py          обучение RF и сохранение артефактов
+├── tests/
+│   └── test_api.py       pytest для FastAPI
 ├── data/                 сырой датасет (не в git)
 │   └── house_prices.csv
 ├── model/                model.pkl, target_encoding.pkl (не в git)
@@ -102,6 +105,16 @@ python -m app.main           # API на http://127.0.0.1:8000
 ```
 
 Swagger UI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+### Тесты
+
+Модель для тестов не нужна: подставляется заглушка.
+
+```bash
+PYTHONPATH=. python -m pytest tests/test_api.py -v
+```
+
+Проверяются код 200 у `GET /health`, поля ответа `POST /predict` и 422 при `transaction` вне `{0, 1}`.
 
 ### Через Docker
 
@@ -166,5 +179,5 @@ curl -X POST http://127.0.0.1:8000/predict \
 - Честный CV / отдельный validation split перед финальным тестом
 - Более аккуратная обработка пропусков площади (сейчас часть строк с NaN площади остаётся)
 - Признаки из текста объявления и более сильный энкодинг локаций
-- Тесты на препроцессинг и контракт `/predict`
+- Больше тестов: препроцессинг, контракт Docker-образа
 - Версионирование артефактов модели и простой мониторинг качества на новых данных
